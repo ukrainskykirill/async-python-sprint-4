@@ -62,7 +62,7 @@ async def shor_url(
         db: AsyncSession = Depends(get_session),
         schema_in: schema.ShortUrlCreate
 ) -> any:
-    short_url = await url_crud.post(db=db, obj_in=schema_in)
+    short_url = await url_crud.create(db=db, obj_in=schema_in)
     logger.info('short URL created')
     return short_url
 
@@ -73,6 +73,6 @@ async def batch_upload(
         db: AsyncSession = Depends(get_session),
         schema_in: schema.ShortUrlCreateBatchUpload
 ) -> any:
-    short_url = await url_crud.batch_upload(db=db, obj_in=schema_in)
+    short_url = await url_crud.create_multi(db=db, obj_in=schema_in)
     logger.info('batch upload success')
     return short_url

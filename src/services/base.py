@@ -1,5 +1,7 @@
 import secrets
 import string
+from abc import ABC, abstractmethod
+
 from fastapi.encoders import jsonable_encoder
 from typing import Generic, Type, TypeVar
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,12 +13,22 @@ ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 
 
-class Repository:
+class Repository(ABC):
 
+    @abstractmethod
     def get(self, *args, **kwargs):
         raise NotImplementedError
 
+    @abstractmethod
+    def get_status(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
     def create(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    def create_multi(self, *args, **kwargs):
         raise NotImplementedError
 
 
@@ -47,17 +59,12 @@ class RepositoryDB(Repository, Generic[ModelType, CreateSchemaType]):
         result = await db.execute(statement=statement)
         return result.scalar()
 
-    async def get_user_status(self, db: AsyncSession, nickname: str) -> ModelType:
-        statement = select(self._model).where(self._model.user.nikname == nickname)
-        result = await db.scalars(statement)
-        return result
-
     @staticmethod
     def short_url(length: int = 5) -> str:
         chars = string.ascii_uppercase + string.digits
         return "".join(secrets.choice(chars) for _ in range(length))
 
-    async def post(self, db: AsyncSession, *, obj_in: CreateSchemaType) -> ModelType:
+    async def create(self, db: AsyncSession, *, obj_in: CreateSchemaType) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self._model(**obj_in_data)
         db_obj.short_url = self.short_url()
@@ -66,7 +73,7 @@ class RepositoryDB(Repository, Generic[ModelType, CreateSchemaType]):
         await db.refresh(db_obj)
         return db_obj
 
-    async def batch_upload(self, db: AsyncSession, *, obj_in: CreateSchemaType) -> ModelType:
+    async def create_multi(self, db: AsyncSession, *, obj_in: CreateSchemaType) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
         all_obj = []
         for obj in obj_in_data:

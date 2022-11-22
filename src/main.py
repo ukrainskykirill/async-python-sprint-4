@@ -12,7 +12,7 @@ app = FastAPI(
     default_response_class=ORJSONResponse,
 )
 
-app.include_router(base.router, prefix='/api')
+app.include_router(base.router, prefix='/api/v1')
 
 
 @app.middleware("http")

@@ -16,8 +16,7 @@ batch_upload = [
 
 def test_get_db_status():
     response = client.get('api/ping')
-    print(response)
-    assert response.status_code == 200
+    assert response.status_code == HTTPStatus.OK
     assert response.json() == {'DB connection': 'Access established'}
 
 
